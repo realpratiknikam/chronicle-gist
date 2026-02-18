@@ -1,0 +1,257 @@
+Metadata-Version: 2.1
+Name: chronicle-ai
+Version: 0.2.1
+Summary: The Long-Term Memory Engine for LLMs
+Home-page: https://github.com/chronicle-ai/chronicle
+Author: Chronicle Team
+Author-email: hello@chronicle.ai
+Project-URL: Bug Tracker, https://github.com/chronicle-ai/chronicle/issues
+Project-URL: Documentation, https://github.com/chronicle-ai/chronicle#readme
+Project-URL: Source Code, https://github.com/chronicle-ai/chronicle
+Classifier: Development Status :: 4 - Beta
+Classifier: Intended Audience :: Developers
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Operating System :: OS Independent
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.8
+Classifier: Programming Language :: Python :: 3.9
+Classifier: Programming Language :: Python :: 3.10
+Classifier: Programming Language :: Python :: 3.11
+Classifier: Topic :: Software Development :: Libraries :: Python Modules
+Classifier: Topic :: Scientific/Engineering :: Artificial Intelligence
+Requires-Python: >=3.8
+Description-Content-Type: text/markdown
+Provides-Extra: postgres
+Provides-Extra: redis
+Provides-Extra: mongo
+License-File: LICENSE
+
+# Chronicle: The Long-Term Memory Engine for LLMs
+
+Chronicle is a lightweight, open-source Python library designed to solve the context window problem for LLM applications. It manages session memory, compresses history, and maintains a structured "Fact Ledger" of user details—all with a simple, drop-in API.
+
+[![PyPI version](https://badge.fury.io/py/chronicle-ai.svg)](https://badge.fury.io/py/chronicle-ai)
+
+## 🚀 Key Features
+
+*   **Library-First**: No sidecars or complex infrastructure. Just `pip install chronicle-ai`.
+*   **Zero-Bloat Context**: Automatically compresses chat history when it exceeds a token threshold.
+*   **Fact Ledger**: Extracts and maintains structured facts (e.g., User requirements, preferences) separately from the narrative summary.
+*   **Storage Agnostic**: Comes with In-Memory storage (TTL) out of the box. Adapters for Postgres/Redis available.
+*   **LLM Independent**: Works with OpenAI, Anthropic, Groq, or any provider via `litellm`.
+
+---
+
+## 📦 Installation
+
+```bash
+pip install chronicle-ai
+```
+
+## ⚡ Quick Start
+
+```python
+import os
+from chronicle import Chronicle
+
+# 1. Initialize Chronicle
+# Uses In-Memory storage by default.
+chronicle = Chronicle(
+    api_key=os.getenv("OPENAI_API_KEY"),
+    model_name="gpt-4o" # Model used for background compression
+)
+
+session_id = "user_123"
+
+# 2. Your Chat Application
+history = [
+    {"role": "user", "content": "I'm Alice, a software engineer."},
+    {"role": "assistant", "content": "Hello Alice!"},
+]
+
+new_msg = {"role": "user", "content": "Can you help me design a DB schema?"}
+
+# 3. Process with Chronicle (Async is Recommended!)
+# Returns optimized context (System Prompt with Memory + Recent Messages)
+context = await chronicle.process_async(session_id, new_msg, history)
+
+print(context["hydrated_messages"])
+```
+
+
+### 4. Custom Instructions ("Persona")
+
+You can inject custom behavior into the system prompt.
+
+```python
+chronicle = Chronicle(
+    api_key="...",
+    custom_instructions="You are a medical assistant. Focus on symptoms and history."
+)
+```
+
+## ⚙️ Configuration
+
+Chronicle automatically detects standard environment variables, so you don't need to learn new ones.
+
+| Variable | Description | Default |
+| :--- | :--- | :--- |
+| `OPENAI_API_KEY` | API Key (or `GROQ_API_KEY`, etc.) | `None` |
+| `LLM_MODEL` | Model ID for compression | `gpt-3.5-turbo` |
+| `CHRONICLE_THRESHOLD` | Token threshold for compression | `1000` |
+
+---
+
+## ⚡ Example Input / Output
+
+### Input (Your App)
+```python
+# A long history that needs compression
+history = [
+    {"role": "user", "content": "My name is Alice. I live in NYC."},
+    {"role": "assistant", "content": "Got it."},
+    {"role": "user", "content": "I am a Python developer."},
+    {"role": "assistant", "content": "Python is great."},
+    # ... imagine 50 more messages ...
+]
+new_msg = {"role": "user", "content": "What stacks do I know?"}
+
+context = await chronicle.process_async("session_1", new_msg, history)
+```
+
+### Output (Chronicle Optimized Context)
+Chronicle replaces the 50+ messages with a concise **System Prompt** containing the summary and a **Fact Ledger**.
+
+```json
+[
+  {
+    "role": "system", 
+    "content": "Summary: User Alice (NYC) is a Python developer. She previously discussed..."
+  },
+  {
+    "role": "system", 
+    "content": "[FACT LEDGER]\n{\n  \"name\": \"Alice\",\n  \"location\": \"NYC\",\n  \"skills\": [\"Python\"]\n}"
+  },
+  {
+    "role": "user", 
+    "content": "What stacks do I know?"
+  }
+]
+```
+
+### Response Metadata
+
+The `meta` field contains useful debugging info:
+
+```json
+{
+  "strategy": "smart",        # "smart" (compressed) or "naive" (sliding window)
+  "bloat_detected": true,     # Was history compressed?
+  "timed_out": false,         # Did compression hit the timeout?
+  "original_tokens": 1250,
+  "final_tokens": 450,
+  "tokens_saved": 800,
+  "latency_ms": 1250.5
+}
+```
+
+### Timeout Control
+
+You can control how long to wait for compression (default: 10000ms). If it times out, Chronicle fails open (returns uncompressed recent context).
+
+```python
+context = await chronicle.process_async(
+    session_id, 
+    new_msg, 
+    history, 
+    timeout=5000 # Wait max 5 seconds
+)
+```
+
+---
+
+## 🔌 Database Adapters
+
+Chronicle supports persistent storage via adapters.
+
+### PostgreSQL
+```bash
+pip install asyncpg
+```
+```python
+from chronicle.storage.postgres import PostgresStorage
+
+storage = PostgresStorage("postgresql://user:pass@localhost:5432/db")
+await storage.connect()
+
+chronicle = Chronicle(api_key="...", storage=storage)
+```
+
+### Redis
+```bash
+pip install redis
+```
+```python
+from chronicle.storage.redis_adapter import RedisStorage
+
+storage = RedisStorage("redis://localhost:6379/0")
+await storage.connect()
+
+chronicle = Chronicle(api_key="...", storage=storage)
+```
+
+### MongoDB
+```bash
+pip install motor
+```
+```python
+from chronicle.storage.mongo import MongoStorage
+
+storage = MongoStorage("mongodb://localhost:27017")
+await storage.connect()
+
+chronicle = Chronicle(api_key="...", storage=storage)
+```
+
+---
+
+## 🧠 How It Works
+
+1.  **Bloat Detection**: Chronicle checks if your `history + new_message` exceeds the `token_threshold`.
+2.  **Compression**: If bloated, it uses a "Worker LLM" to:
+    *   Summarize the conversation into a narrative.
+    *   Extract structured entities into a **Fact Ledger**.
+3.  **Hydration**: It replaces the long history with a compact System Prompt containing the Summary and Facts.
+4.  **Optimization**: It compares the "Optimized" prompt vs the "Naive" prompt and returns the cheaper/better one.
+
+---
+
+## 📂 Architecture
+
+The library is structured for flexibility:
+
+*   `chronicle.core`: Main logic.
+*   `chronicle.storage`: Persistence layer.
+    *   `InMemoryStorage`: Default. Good for testing/stateless.
+    *   `PostgresStorage`, `RedisStorage`, `MongoStorage`: Production-ready persistence.
+*   `chronicle.llm`: LLM interaction layer.
+    *   `LitellmProvider`: Wraps `litellm` for universal support.
+
+---
+
+## 🧪 Examples
+
+Check the `examples/` directory for more:
+
+*   `examples/simple.py`: Basic usage script.
+
+---
+
+## 🛠️ Contributor Guide (Development)
+
+To hack on Chronicle itself:
+
+1.  Clone the repo.
+2.  Install dependencies: `pip install -e .`
+3.  Run the demo: `python examples/simple.py`
+

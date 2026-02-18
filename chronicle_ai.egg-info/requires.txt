@@ -1,0 +1,11 @@
+litellm>=1.0.0
+pydantic>=2.0.0
+
+[mongo]
+motor
+
+[postgres]
+asyncpg
+
+[redis]
+redis
