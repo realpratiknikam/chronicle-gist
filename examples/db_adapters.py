@@ -2,6 +2,10 @@ import os
 import sys
 import asyncio
 from typing import Dict, Any
+from dotenv import load_dotenv
+
+load_dotenv()
+
 
 # Add parent directory to path
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))

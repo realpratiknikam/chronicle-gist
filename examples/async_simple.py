@@ -2,6 +2,9 @@ import os
 import sys
 import asyncio
 import time
+from dotenv import load_dotenv
+
+load_dotenv()
 
 # Add parent directory to path so we can import chronicle without installing
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
