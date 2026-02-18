@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "chronicle-gist"
-version = "0.2.1"
+version = "0.2.2"
 description = "The State Sidecar for AI Agents"
 readme = "README.md"
 requires-python = ">=3.8"
@@ -35,9 +35,9 @@ redis = ["redis"]
 mongo = ["motor"]
 
 [project.urls]
-"Bug Tracker" = "https://github.com/chronicle-ai/chronicle-gist/issues"
-"Documentation" = "https://github.com/chronicle-ai/chronicle-gist#readme"
-"Source Code" = "https://github.com/chronicle-ai/chronicle-gist"
+"Bug Tracker" = "https://github.com/realpratiknikam/chronicle-gist/issues"
+"Documentation" = "https://github.com/realpratiknikam/chronicle-gist/blob/main/README.md"
+"Source Code" = "https://github.com/realpratiknikam/chronicle-gist"
 
 [tool.setuptools.packages.find]
 where = ["."]

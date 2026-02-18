@@ -23,4 +23,5 @@ examples/async_simple.py
 examples/db_adapters.py
 examples/simple.py
 examples/timeout_check.py
+examples/e2e/long_conversation.py
 tests/test_import.py

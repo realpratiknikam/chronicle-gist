@@ -1,11 +1,11 @@
 Metadata-Version: 2.4
 Name: chronicle-gist
-Version: 0.2.1
+Version: 0.2.2
 Summary: The State Sidecar for AI Agents
 Author-email: Chronicle Team <hello@chronicle.ai>
-Project-URL: Bug Tracker, https://github.com/chronicle-ai/chronicle-gist/issues
-Project-URL: Documentation, https://github.com/chronicle-ai/chronicle-gist#readme
-Project-URL: Source Code, https://github.com/chronicle-ai/chronicle-gist
+Project-URL: Bug Tracker, https://github.com/realpratiknikam/chronicle-gist/issues
+Project-URL: Documentation, https://github.com/realpratiknikam/chronicle-gist/blob/main/README.md
+Project-URL: Source Code, https://github.com/realpratiknikam/chronicle-gist
 Classifier: Development Status :: 4 - Beta
 Classifier: Intended Audience :: Developers
 Classifier: License :: OSI Approved :: MIT License

@@ -1,4 +1,4 @@
-# How to Publish `chronicle-ai` to PyPI
+# How to Publish `chronicle-gist` to PyPI
 
 Since you are new to publishing, here is a step-by-step guide to getting your library on PyPI (The Python Package Index).
 
@@ -59,7 +59,7 @@ If you want to try it out before the real deal, you can use TestPyPI.
 When you are ready to show the world:
 
 ```bash
-twine upload dist/*
+python3 -m twine upload dist/*
 ```
 
 *   **Username**: `__token__` (literally type this string)
@@ -70,7 +70,7 @@ twine upload dist/*
 Once uploaded, anyone in the world can install your library:
 
 ```bash
-pip install chronicle-ai
+pip install chronicle-gist
 ```
 
-(Note: If the name `chronicle-ai` is taken, you will get an error. You might need to change the `name` in `setup.py` to something unique like `chronicle-py` or `chronicle-memory`.)
+(Note: If the name `chronicle-gist` is taken, you will get an error. You might need to change the `name` in `setup.py` to something unique like `chronicle-py` or `chronicle-memory`.)
